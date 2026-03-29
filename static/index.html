@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeacherAi | Professional Exam Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        }
+
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .editable-area {
+            outline: none;
+            min-height: 400px;
+            line-height: 1.8;
+            font-family: 'Times New Roman', serif;
+            border: none;
+            border-radius: 0;
+            white-space: pre-wrap;
+        }
+
+        .editable-area .bold-text {
+            font-weight: bold;
+        }
+
+        .docx-template-rendered img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .step-inactive {
+            opacity: 0.4;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        .docx-template-rendered table {
+            width: 100% !important;
+            border-collapse: collapse;
+        }
+
+        .docx-template-rendered td {
+            padding: 5px;
+        }
+
+        .school-header-preview {
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-family: serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 overflow-x-hidden">
+
+    <div id="landing-page" class="min-h-screen">
+        <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto font-bold text-slate-900">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white shadow-lg"><i
+                        data-lucide="brain-circuit"></i></div>
+                <span class="text-2xl tracking-tighter">TeacherAi</span>
+            </div>
+            <button onclick="showPage('app')"
+                class="bg-indigo-600 text-white px-8 py-3 rounded-full hover:bg-black transition shadow-lg">Try
+                Dashboard</button>
+        </nav>
+        <main class="max-w-7xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center gap-16">
+            <div class="flex-1 space-y-8">
+                <h1 class="text-7xl font-extrabold leading-tight text-slate-900">Conduct Exams in <span
+                        class="text-indigo-600">Seconds.</span></h1>
+                <p class="text-xl text-slate-500 max-w-2xl">Upload material, apply your official template, and generate
+                    board-standard <b>question papers</b> instantly.</p>
+                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <button onclick="window.location.href='/build'"
+                        class="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:scale-105 transition">Start
+                        Building</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="app-page" class="hidden h-screen bg-slate-900 flex overflow-hidden">
+        <aside
+            class="w-80 bg-slate-900 hidden lg:flex flex-col p-6 space-y-6 overflow-y-auto no-scrollbar border-r border-white/5">
+            <div class="flex items-center gap-2 pb-6 border-b border-white/10">
+                <span class="text-xl font-bold text-white tracking-tighter">TeacherAi</span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/10 space-y-4 text-white text-center">
+                    <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest">1. Document Context</h3>
+                    <input type="file" id="file-input" class="hidden" accept=".pdf,.docx">
+                    <label for="file-input" id="upload-label"
+                        class="cursor-pointer border border-dashed border-white/20 rounded-xl p-4 flex flex-col items-center hover:bg-white/5 transition">
+                        <i data-lucide="upload" class="mb-2 text-slate-400"></i>
+                        <span id="upload-status" class="text-[10px] text-slate-400 font-bold">CLICK TO UPLOAD
+                            CHAPTER</span>
+                    </label>
+                    <button onclick="uploadFile()" id="upload-btn"
+                        class="w-full bg-white text-slate-900 rounded-xl py-2 font-bold text-sm">Analyze
+                        Material</button>
+
+                    <div class="pt-2 border-t border-white/10">
+                        <h3 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-2 text-left">
+                            Optional: Base Template (.docx)</h3>
+                        <input type="file" id="template-input" class="hidden" accept=".docx">
+                        <label for="template-input" id="template-label"
+                            class="cursor-pointer border border-dashed border-emerald-500/30 rounded-xl p-3 flex flex-col items-center hover:bg-emerald-500/10 transition">
+                            <i data-lucide="layout-template" class="mb-1 text-emerald-400 w-4 h-4"></i>
+                            <span id="template-status" class="text-[10px] text-emerald-400/70 font-bold">UPLOAD BASE
+                                .DOCX</span>
+                        </label>
+                        <button onclick="uploadTemplate()" id="template-btn"
+                            class="w-full bg-emerald-600/20 text-emerald-400 rounded-xl py-2 mt-2 font-bold text-[10px]">Apply
+                            Template</button>
+                    </div>
+                </div>
+
+                <div id="form-section"
+                    class="bg-indigo-600/10 p-4 rounded-2xl border border-indigo-500/20 space-y-4 text-white step-inactive">
+                    <h3 class="text-xs font-black text-amber-400 uppercase tracking-widest">2. Exam Layout</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">School Name</label>
+                            <input type="text" id="school-name" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                                value="GENIUS HIGH SCHOOL :: BHONGIR">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Upload Logo</label>
+                            <input type="file" id="logo-input" class="hidden" accept=".png,.jpg,.jpeg">
+                            <button onclick="document.getElementById('logo-input').click()"
+                                class="w-full bg-white/5 p-2 rounded-lg text-xs hover:bg-white/10 transition flex items-center gap-2">
+                                <i data-lucide="image" class="w-3 h-3 text-indigo-400"></i>
+                                <span id="logo-status">PICK LOGO</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="detected-meta" class="hidden text-[10px] bg-white/5 p-2 rounded-lg border border-white/5">
+                        <span class="text-white/40">IDENTIFIED:</span>
+                        <span id="display-subject" class="text-amber-300 font-bold uppercase ml-1"></span> |
+                        <span id="display-class" class="text-amber-300 font-bold uppercase ml-1"></span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button onclick="setExamLayout('PT', 40)" id="btn-fa"
+                            class="w-full py-3 bg-white text-slate-900 rounded-xl hover:bg-indigo-100 transition text-xs font-bold shadow-lg">PT
+                            (40 Marks)</button>
+                        <button onclick="setExamLayout('SA', 80)" id="btn-sa"
+                            class="w-full py-3 border border-white/20 rounded-xl hover:bg-white/10 transition text-xs font-bold">SA
+                            (80 Marks)</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Subject</label>
+                            <input type="text" id="subject" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                                placeholder="e.g. Science">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Class</label>
+                            <input type="text" id="class" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                                placeholder="e.g. VII">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Test Name</label>
+                            <input type="text" id="test-name" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                                value="Periodic Test - I">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Time Limit</label>
+                            <input type="text" id="time-limit" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                                value="90mins">
+                        </div>
+                    </div>
+
+                    <h3 class="text-xs font-black text-indigo-400 uppercase tracking-widest pt-2">3. Structure &
+                        Difficulty</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="text-[10px] text-white/40 block mb-1">Total Marks</label>
+                        <input type="number" id="paper-marks" class="w-full bg-white/5 p-2 rounded-lg text-xs"
+                            value="40" placeholder="Total Marks">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Target Language</label>
+                            <select id="paper-language" class="w-full bg-white/5 p-2 rounded-lg text-xs">
+                                <option value="English" selected>English</option>
+                                <option value="Telugu">Telugu (తెలుగు)</option>
+                                <option value="Hindi">Hindi (हिन्दी)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-white/40 block mb-1">Difficulty</label>
+                            <select id="difficulty" class="w-full bg-white/5 p-2 rounded-lg text-xs">
+                                <option value="Basic">Basic</option>
+                                <option value="Intermediate" selected>Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <h3 class="text-[10px] font-black text-white/40 uppercase tracking-widest pt-2">Assist (Pattern/Sum)
+                    </h3>
+                    <textarea id="paper-structure" rows="3"
+                        class="w-full bg-white/5 p-2 rounded-lg text-[10px] border border-white/5"
+                        placeholder="E.g. Section A: 7 Qs (2M each), Section B: 10 Qs (6M each). Sum must be 40."></textarea>
+
+                    <input type="hidden" id="paper-marks" value="40">
+
+                    <button onclick="generateQuestions()" id="gen-btn"
+                        class="w-full gradient-bg rounded-xl py-4 font-bold shadow-xl hover:scale-105 transition mt-2">Generate
+                        Exam Paper</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto bg-slate-50 h-full p-8 no-scrollbar relative">
+            <!-- Welcome Empty State -->
+            <div id="welcome-section" class="max-w-4xl mx-auto py-12 animate-fade">
+                <div class="bg-white rounded-3xl p-12 shadow-sm border border-slate-100 text-center space-y-6">
+                    <div
+                        class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-8">
+                        <i data-lucide="sparkles" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight">Generate Professional Exams</h2>
+                    <p class="text-slate-500 text-lg max-w-lg mx-auto">Upload your study material in the sidebar to
+                        start building custom assessments in seconds.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12">
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                            <div
+                                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm mx-auto">
+                                <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-600"></i>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800">1. Upload Context</h4>
+                            <p class="text-[10px] text-slate-500">Provide PDF/Word content as the source material.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                            <div
+                                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm mx-auto">
+                                <i data-lucide="settings-2" class="w-5 h-5 text-amber-600"></i>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800">2. Define Format</h4>
+                            <p class="text-[10px] text-slate-500">Select marks, subject, and difficulty level.</p>
+                        </div>
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-3">
+                            <div
+                                class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm mx-auto">
+                                <i data-lucide="wand-2" class="w-5 h-5 text-emerald-600"></i>
+                            </div>
+                            <h4 class="font-bold text-sm text-slate-800">3. Rapid Export</h4>
+                            <p class="text-[10px] text-slate-500">Get board-standard PDF & Word documents.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result-section" class="hidden max-w-4xl mx-auto animate-fade pb-20">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-black text-slate-400 uppercase text-xs tracking-tighter">Live Preview & Editor</h2>
+                    <div class="flex gap-2">
+                        <button onclick="exportDoc('docx', 'questions')"
+                            class="bg-blue-600 text-white px-10 py-4 rounded-2xl text-sm font-black flex items-center gap-2 shadow-2xl hover:scale-105 transition hover:bg-blue-700">
+                            <i data-lucide="file-text" class="w-5 h-5"></i> Download DOCX (Ready for Board
+                            Exam)</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-12 shadow-2xl rounded-3xl min-h-screen border border-slate-100">
+                    <div id="paper-header" class="school-header-preview">
+                        <!-- Dynamic Header Preview -->
+                        <div id="header-view" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <img src="/static/genius-logo.png"
+                                    onerror="this.src='https://placehold.co/100x40?text=LOGO'" class="h-12 w-auto">
+                                <div class="text-center flex-1">
+                                    <h1 id="view-school" class="text-xl font-black uppercase text-black">GENIUS HIGH
+                                        SCHOOL :: BHONGIR</h1>
+                                    <p id="view-test"
+                                        class="text-sm font-bold border-b-2 border-black inline-block uppercase text-black pb-1">
+                                        PERIODIC TEST - I</p>
+                                </div>
+                                <div class="w-24"></div> <!-- Spacer -->
+                            </div>
+                            <div class="grid grid-cols-2 text-xs font-bold pt-4 text-black">
+                                <div>Class- <span id="view-class" class="text-black">VII</span></div>
+                                <div class="text-right">Marks: <span id="view-marks" class="text-black">40</span>
+                                </div>
+                                <div>Subject: <span id="view-subject" class="text-black">Science</span></div>
+                                <div class="text-right">Time: <span id="view-time" class="text-black">90mins</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="output-questions" contenteditable="true" class="editable-area p-4 text-black text-xl">
+                    </div>
+                    <button onclick="generateAnswers()" id="ans-gen-btn"
+                        class="mt-8 bg-amber-100 text-amber-700 px-6 py-3 rounded-full font-black text-xs">Generate
+                        Answer Key</button>
+                </div>
+
+                <div id="answers-section"
+                    class="hidden mt-12 bg-emerald-50 p-12 rounded-3xl border border-emerald-100 shadow-xl">
+                    <h3 class="text-emerald-700 font-bold mb-4">Official Answer Key</h3>
+                    <div id="output-answers" contenteditable="true" class="editable-area bg-white p-8 text-lg"></div>
+                    <button onclick="exportDoc('docx', 'answers')"
+                        class="mt-4 bg-emerald-700 text-white px-6 py-2 rounded-lg text-xs font-bold">Download Key
+                        (Word)</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        window.isUsingTemplate = false;
+
+        window.onload = function () {
+            const path = window.location.pathname;
+            // Both /build and /template now trigger the template upload as the primary flow
+            if (path === '/build' || path === '/template') {
+                showPage('app');
+                triggerTemplateUpload();
+            }
+        };
+
+        function triggerTemplateUpload() {
+            document.getElementById('template-input').click();
+            window.isUsingTemplate = true;
+        }
+
+        function setExamLayout(type, marks) {
+            document.getElementById('paper-marks').value = marks;
+
+            if (type === 'PT') {
+                document.getElementById('test-name').value = "Periodic Test - I";
+                document.getElementById('time-limit').value = "90mins";
+            } else {
+                document.getElementById('test-name').value = "Summative Assessment (SA)";
+                document.getElementById('time-limit').value = "3 Hours";
+            }
+
+            const fa = document.getElementById('btn-fa');
+            const sa = document.getElementById('btn-sa');
+            if (type === 'PT') {
+                fa.className = "w-full py-3 bg-white text-slate-900 rounded-xl hover:bg-indigo-100 transition text-xs font-bold shadow-lg";
+                sa.className = "w-full py-3 border border-white/20 rounded-xl hover:bg-white/10 transition text-xs font-bold";
+            } else {
+                sa.className = "w-full py-3 bg-white text-slate-900 rounded-xl hover:bg-indigo-100 transition text-xs font-bold shadow-lg";
+                fa.className = "w-full py-3 border border-white/20 rounded-xl hover:bg-white/10 transition text-xs font-bold";
+            }
+        }
+
+        function showPage(page) {
+            document.getElementById('landing-page').classList.add('hidden');
+            document.getElementById('app-page').classList.add('hidden');
+            document.getElementById(page + '-page').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        async function uploadFile() {
+            const input = document.getElementById('file-input');
+            const status = document.getElementById('upload-status');
+            const label = document.getElementById('upload-label');
+            const btn = document.getElementById('upload-btn');
+            if (!input.files[0]) return alert('Pick content file');
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            btn.innerText = 'Analyzing...';
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    window.currentDocId = data.id;
+                    const fileName = input.files[0].name;
+                    status.innerText = fileName + ' ✓';
+                    label.classList.add('bg-emerald-500/10', 'border-emerald-500/50');
+                    status.classList.remove('text-slate-400');
+                    status.classList.add('text-emerald-400', 'font-black');
+                    btn.innerText = 'Material Analyzed ✓';
+                    btn.classList.add('bg-emerald-600', 'text-white');
+
+                    // Auto-fill detected metadata
+                    if (data.subject || data.class) {
+                        window.currentSubject = data.subject || "";
+                        window.currentClass = data.class || "";
+                        if (window.currentSubject) document.getElementById('subject').value = window.currentSubject;
+                        if (window.currentClass) document.getElementById('class').value = window.currentClass;
+                    }
+
+                    document.getElementById('form-section').classList.remove('step-inactive');
+                } else { btn.innerText = 'Upload Failed'; }
+            } catch (e) { btn.innerText = 'Error Uploading'; }
+        }
+
+        async function uploadTemplate() {
+            const input = document.getElementById('template-input');
+            const btn = document.getElementById('template-btn');
+            const label = document.getElementById('template-label');
+            const status = document.getElementById('template-status');
+            if (!input.files[0]) return alert('Pick .docx template');
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            btn.innerText = 'Applying...';
+            try {
+                const res = await fetch('/upload/template', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    window.currentTemplateId = data.id;
+                    const fileName = input.files[0].name;
+                    status.innerText = fileName + ' ✓';
+                    label.classList.add('bg-emerald-500/10', 'border-emerald-500/50');
+                    status.classList.remove('text-emerald-400/70');
+                    status.classList.add('text-emerald-400', 'font-black');
+                    btn.innerText = 'Template Applied ✓';
+                    btn.classList.add('bg-emerald-600', 'text-white');
+
+                    // Render template preview
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const arrayBuffer = e.target.result;
+                        mammoth.convertToHtml({ arrayBuffer: arrayBuffer })
+                            .then(function (result) {
+                                // Correct alignment: Center images and force table width
+                                let html = result.value.replace(/<img/g, '<div style="text-align: center; margin-bottom: 20px;"><img style="max-width: 200px; height: auto;"');
+                                html = html.replace(/<img([^>]*)>/g, '<img$1></div>');
+
+                                document.getElementById('template-header-view').innerHTML = `<div class="docx-template-rendered">${html}</div><div class='border-b-2 border-black my-4'></div>`;
+                                document.getElementById('template-header-view').classList.remove('hidden');
+
+                                // Put template content into the editor area as a preview
+                                const out = document.getElementById('output-questions');
+                                if (out.innerText.trim() === "") {
+                                    out.innerHTML = `<div class="opacity-40">${html}</div>`;
+                                }
+
+                                // Reveal and Scroll to preview
+                                document.getElementById('welcome-section').classList.add('hidden');
+                                document.getElementById('result-section').classList.remove('hidden');
+                                document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+                            })
+                            .done();
+                    };
+                    reader.readAsArrayBuffer(input.files[0]);
+                } else { btn.innerText = 'Template Failed'; }
+            } catch (e) { btn.innerText = 'Error Applying'; }
+        }
+
+        async function generateQuestions() {
+            if (!window.currentDocId) { alert("Please upload a chapter (Document Context) first!"); return; }
+
+            // Update Live Preview Header
+            document.getElementById('view-school').innerText = document.getElementById('school-name').value;
+            document.getElementById('view-test').innerText = document.getElementById('test-name').value;
+            document.getElementById('view-class').innerText = document.getElementById('class').value;
+            document.getElementById('view-subject').innerText = document.getElementById('subject').value;
+            document.getElementById('view-time').innerText = document.getElementById('time-limit').value;
+            document.getElementById('view-marks').innerText = document.getElementById('paper-marks').value;
+
+            const btn = document.getElementById('gen-btn');
+            const out = document.getElementById('output-questions');
+            btn.innerText = 'Generating Exam Paper...'; btn.disabled = true;
+            out.innerText = "";
+            document.getElementById('welcome-section').classList.add('hidden');
+            document.getElementById('result-section').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/generate-stream', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: (document.getElementById('topic') ? document.getElementById('topic').value : "General Content Analysis"),
+                        difficulty: document.getElementById('difficulty').value,
+                        number_of_questions: 20,
+                        question_types: ["Questions based on context provided"],
+                        context_text: window.currentDocId,
+                        custom_structure: document.getElementById('paper-structure').value || "",
+                        total_marks: parseInt(document.getElementById('paper-marks').value) || 40,
+                        language: document.getElementById('paper-language').value
+                    })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullContent = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullContent += chunk;
+
+                    // Add bolding to sections and marks distribution lines
+                    let displayContent = fullContent
+                        .replace(/(SECTION\s+[A-Z](?:\s*\([^)]+\d+\s*M\))?)/gi, '<span class="bold-text">$1</span>')
+                        .replace(/(\(\d+ ?[xX] ?\d+ ?= ?\d+ ?M\))/g, '<span class="bold-text">$1</span>')
+                        .replace(/(\(\d+ ?M\))/g, '<span class="bold-text">$1</span>');
+
+                    out.innerHTML = displayContent;
+                    out.scrollTop = out.scrollHeight;
+                }
+            } catch (e) { alert("Network error: Server might be down. Please restart python server."); }
+            finally { btn.innerText = 'Generate Exam Paper'; btn.disabled = false; }
+        }
+
+        async function generateAnswers() {
+            const btn = document.getElementById('ans-gen-btn');
+            const out = document.getElementById('output-answers');
+            btn.innerText = 'Solving...';
+            try {
+                const res = await fetch('/generate/answers', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        doc_id: window.currentDocId,
+                        question_paper: document.getElementById('output-questions').innerText,
+                        language: document.getElementById('paper-language').value
+                    })
+                });
+                if (res.ok) { const data = await res.json(); out.innerText = data.content; document.getElementById('answers-section').classList.remove('hidden'); }
+            } finally { btn.innerText = 'Answer Key Ready'; }
+        }
+
+        async function exportDoc(format, type) {
+            let content = document.getElementById(type === 'questions' ? 'output-questions' : 'output-answers').innerText;
+
+            const res = await fetch(`/export/${format}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: content,
+                    template_id: null,
+                    school_name: document.getElementById('school-name').value || "GENIUS HIGH SCHOOL :: BHONGIR",
+                    subject: document.getElementById('subject').value || window.currentSubject,
+                    class: document.getElementById('class').value || window.currentClass,
+                    test_name: document.getElementById('test-name').value || "Periodic Test - I",
+                    time_limit: document.getElementById('time-limit').value || "90mins",
+                    max_marks: document.getElementById('paper-marks').value || "40"
+                })
+            });
+            if (res.ok) {
+                const blob = await res.blob();
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                a.download = `${type}_export.${format}`; a.click();
+            }
+        }
+        document.getElementById('logo-input').onchange = async function () {
+            const input = this;
+            if (!input.files[0]) return;
+            document.getElementById('logo-status').innerText = "Uploading...";
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            try {
+                const res = await fetch('/upload/logo', { method: 'POST', body: formData });
+                if (res.ok) {
+                    document.getElementById('logo-status').innerText = "Logo ✓";
+                    // Refresh preview image by adding timestamp to prevent cache
+                    document.querySelector('#header-view img').src = '/static/logo.png?t=' + new Date().getTime();
+                } else {
+                    document.getElementById('logo-status').innerText = "Fail";
+                }
+            } catch (e) { console.error(e); }
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+pydantic-settings
+google-generativeai
+pymupdf
+python-docx
+python-dotenv
+aiofiles
